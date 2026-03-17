@@ -192,20 +192,42 @@ function useFancyEffects({ starsRef }) {
     const cleanups = magneticEls.map((el) => {
       const strength = el.classList.contains("cta--small") ? 10 : 16;
       let raf = 0;
+      let tx = 0;
+      let ty = 0;
       const onMove = (e) => {
         const r = el.getBoundingClientRect();
         const dx = e.clientX - (r.left + r.width / 2);
         const dy = e.clientY - (r.top + r.height / 2);
-        const tx = (dx / r.width) * strength;
-        const ty = (dy / r.height) * strength;
-        if (raf) cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => {
+        const targetTx = (dx / r.width) * strength;
+        const targetTy = (dy / r.height) * strength;
+        
+        const tick = () => {
+          tx += (targetTx - tx) * 0.15;
+          ty += (targetTy - ty) * 0.15;
           el.style.transform = `translate(${tx}px, ${ty}px)`;
-        });
+          raf = requestAnimationFrame(tick);
+        };
+        
+        if (!raf) raf = requestAnimationFrame(tick);
       };
       const onLeave = () => {
-        if (raf) cancelAnimationFrame(raf);
+        const tick = () => {
+          tx += (0 - tx) * 0.15;
+          ty += (0 - ty) * 0.15;
+          
+          if (Math.abs(tx) < 0.1 && Math.abs(ty) < 0.1) {
         el.style.transform = "";
+        cancelAnimationFrame(raf);
+        raf = 0;
+        return;
+          }
+          
+          el.style.transform = `translate(${tx}px, ${ty}px)`;
+          raf = requestAnimationFrame(tick);
+        };
+        
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(tick);
       };
       el.addEventListener("pointermove", onMove);
       el.addEventListener("pointerleave", onLeave);
@@ -485,10 +507,10 @@ export default function App() {
               </div>
             </div>
 
-            <div className="scrollHint" aria-hidden="true">
+            {/* <div className="scrollHint" aria-hidden="true">
               <span className="scrollHint__mouse" />
               <span className="mono small">Scroll</span>
-            </div>
+            </div> */}
           </div>
         </section>
 
@@ -575,8 +597,9 @@ export default function App() {
                   <span className="timeItem__tag mono">Risk · Workflow · Reporting</span>
                 </div>
                 <p className="timeItem__text">
-                  Delivered a loan classification platform supporting clear workflows and consistent decisioning,
-                  tailored to regulatory and operational needs.
+                  Delivered a loan classification platform supporting clear workflows and consistent decisioning, 
+                  tailored to regulatory and operational needs. Integrated SAML 2.0 SSO to streamline user authentication, 
+                  ensuring secure, centralized access control and compliance with enterprise identity standards.
                 </p>
                 <div className="tagRow">
                   <span className="tag">Dashboards</span>
@@ -652,7 +675,7 @@ export default function App() {
                 </a>
                 <a
                   className="ghostBtn"
-                  href="https://www.linkedin.com/in/YOUR_LINKEDIN_HANDLE"
+                  href="https://www.linkedin.com/in/bryan-leung-1386bb1b3/"
                   target="_blank"
                   rel="noreferrer"
                 >
